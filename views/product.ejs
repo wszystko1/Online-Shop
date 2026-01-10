@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="/css/product.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        let cnt = 1;
+        function increase() {
+            cnt++;
+            document.getElementsByClassName('product-cnt')[0].innerText = cnt;
+        }
+        function decrease() {
+            if(cnt > 1) {
+                cnt--;
+                document.getElementsByClassName("product-cnt")[0].innerText = cnt;
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="header-wrapper">
+        <header>
+            <nav class="main-nav">
+                <div class="nav-item">
+                    <a class="nav-link" href="/main">Home</a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="/about">About</a>
+                </div>
+                <div class="nav-item">
+                    <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="/login">Log in</a>
+                </div>
+            </div>
+        </nav>
+        </header>
+    </div>
+    <div class="result-body">
+        <div class="product">
+            <img class="product-image" src="/images/cactus.png" width="300" height="300"></img>
+            <div class="product-info">
+                <div class="product-desc">
+                    <h6>Charming Desert Cactus</h6>
+                    <p> Add a touch of desert charm to your space with this low-maintenance cactus. </p>
+                    <p>Perfect for desks, shelves, or small corners, it thrives with minimal watering and care.</p>
+                    <p>Its unique shape and natural resilience make it both stylish and symbolic.</p>
+                    <p>Ideal for beginners or busy plant lovers, this cactus brings simple beauty that lasts 🌵</p>
+                </div>
+                <div class="cnt-control">
+                    <button class="inc-btn" onclick="increase()">+</button>
+                    <label class="product-cnt">1</label>
+                    <button class="dec-btn" onclick="decrease()">-</button>
+                </div>
+                <button class="add-btn">Add to Bag</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+<footer>
+    <small>
+        <div class="footer-content">
+            Copyright © 2023 Best Duo Ever. All Rights Reserved.
+        </div>
+    </small>    
+</footer>
+</html>
+
+

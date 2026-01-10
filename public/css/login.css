@@ -1,0 +1,114 @@
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    background-color: #f6f7fb;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+}
+
+h6 {
+    font-size: 17px;
+    text-decoration: none;
+    margin: 0px;
+}
+
+.nav-item:nth-of-type(3) {
+    margin-left: auto;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    background-color: #c1d3f0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+
+.main-nav div a {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: black;
+}
+
+.main-nav div a:hover {
+    background-color: #f3f4f6;
+}
+
+.main-nav div a:active {
+    background-color: #2196F3;
+}
+
+
+.main-nav input[type="text"] {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.main-nav input[type="text"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+label {
+    display: block;
+    margin: 5px 0px 5px 0px;
+}
+
+input {
+    display: block;
+    width: 300px;
+    font-size: 15px;
+}
+
+button {
+    display: block;
+    margin: 30px 0px 5px 0px;
+    width: 100%;
+    font-size: 15px;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.login-form {
+    padding: 50px;   
+    background-color: #c1d3f0;
+}
+
+
+.login-window {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 50px;
+    font-weight: 800;
+}
+
+.footer-content {
+    margin-top: 100%;
+    text-align: center;
+}
+

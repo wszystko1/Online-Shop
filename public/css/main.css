@@ -1,0 +1,131 @@
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    background-color: #f6f7fb;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+}
+
+h6 {
+    font-size: 17px;
+    text-decoration: none;
+    margin: 0px;
+}
+
+.nav-item:nth-of-type(3) {
+    margin-left: auto;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    background-color: #c1d3f0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.main-nav div a {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: black;
+}
+
+.main-nav div a:hover {
+    background-color: #f3f4f6;
+}
+
+.main-nav div a:active {
+    background-color: #2196F3;
+}
+
+.main-nav input[type="text"] {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.main-nav input[type="text"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* better option - make images change size when window is shrinked !!! s*/
+/* przypomniec sobie jak dodawac klasy */
+
+.result-body {
+    display: flex;
+}
+
+.sidebar {
+    background-color: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 16px;
+}
+
+ul {
+    list-style-type: none;
+    text-decoration: none;
+    padding: 10px 0px 0px 0px;
+    margin: 0px;
+}    
+
+li {
+    margin: 6px 0;
+    padding: 8px;
+    border-radius: 6px;
+    background-color: transparent;
+}
+
+li:hover {
+    background-color: #f3f4f6;
+}
+
+li a {
+    display: block;
+}
+
+.product-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(316px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    background-color: transparent;
+    flex: 1;
+}
+
+.product-image {
+    margin: 8px;
+    border-radius: 4px;
+}
+
+.product-name {
+    margin-left: 8px;
+    font-size: 14px;
+    color: #374151;
+}
+
+.product-price {
+    margin-left: 8px;
+    font-weight: bold;
+    color: #dc2626;
+    font-size: 18px;
+}
+
+.footer-content {
+   text-align: center;
+}
+
+
