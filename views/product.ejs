@@ -8,36 +8,51 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
         let cnt = 1;
+
         function increase() {
             cnt++;
             document.getElementsByClassName('product-cnt')[0].innerText = cnt;
         }
+
         function decrease() {
             if(cnt > 1) {
                 cnt--;
                 document.getElementsByClassName("product-cnt")[0].innerText = cnt;
             }
         }
+    
+        async function loadNav() {
+            const data = await fetch('/load-nav');
+            const navHtml = await data.text();
+            document.getElementsByTagName('header')[0].innerHTML = navHtml;
+        }
+        
+        loadNav();
+
+        async function updateCart() {
+            const newProduct = {
+                productName: document.getElementsByClassName('product-name')[0].innerText,
+                productQuantity: parseInt(document.getElementsByClassName('product-cnt')[0].innerText),
+            }
+            try {
+                const response = await fetch("/cart", {
+                    method: "post",
+                    credentials: 'include',
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(newProduct)
+                });
+                // console.log(await response.json());
+                console.log(response);
+            } catch(e) {
+                    console.error(e);
+            }
+        }
+            
     </script>
 </head>
 <body>
     <div id="header-wrapper">
         <header>
-            <nav class="main-nav">
-                <div class="nav-item">
-                    <a class="nav-link" href="/main">Home</a>
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link" href="/about">About</a>
-                </div>
-                <div class="nav-item">
-                    <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link" href="/login">Log in</a>
-                </div>
-            </div>
-        </nav>
         </header>
     </div>
     <div class="result-body">
@@ -45,18 +60,19 @@
             <img class="product-image" src="/images/cactus.png" width="300" height="300"></img>
             <div class="product-info">
                 <div class="product-desc">
-                    <h6>Charming Desert Cactus</h6>
+                    <h6 class="product-name">Charming Desert Cactus</h6>
                     <p> Add a touch of desert charm to your space with this low-maintenance cactus. </p>
                     <p>Perfect for desks, shelves, or small corners, it thrives with minimal watering and care.</p>
                     <p>Its unique shape and natural resilience make it both stylish and symbolic.</p>
                     <p>Ideal for beginners or busy plant lovers, this cactus brings simple beauty that lasts 🌵</p>
                 </div>
                 <div class="cnt-control">
+                    <!-- TODO: potencially use something different than onlicks() -->
                     <button class="inc-btn" onclick="increase()">+</button>
                     <label class="product-cnt">1</label>
                     <button class="dec-btn" onclick="decrease()">-</button>
                 </div>
-                <button class="add-btn">Add to Bag</button>
+                <button class="add-btn" onclick="updateCart()">Add to Bag</button>
             </div>
         </div>
     </div>
@@ -67,7 +83,7 @@
         <div class="footer-content">
             Copyright © 2023 Best Duo Ever. All Rights Reserved.
         </div>
-    </small>    
+    </small>
 </footer>
 </html>
 

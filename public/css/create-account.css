@@ -89,70 +89,51 @@ h6 {
 
 .nav-drop:hover .nav-drop-btn {background-color: #3e8e41;}
 
-/* better option - make images change size when window is shrinked !!! s*/
-/* przypomniec sobie jak dodawac klasy */
-
-.result-body {
-    display: flex;
-}
-
-.sidebar {
-    background-color: #ffffff;
-    border-right: 1px solid #e5e7eb;
-    padding: 16px;
-}
-
-ul {
-    list-style-type: none;
-    text-decoration: none;
-    padding: 10px 0px 0px 0px;
-    margin: 0px;
-}    
-
-li {
-    margin: 6px 0;
-    padding: 8px;
-    border-radius: 6px;
-    background-color: transparent;
-}
-
-li:hover {
-    background-color: #f3f4f6;
-}
-
-li a {
+label {
     display: block;
+    margin: 5px 0px 5px 0px;
 }
 
-.product-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(316px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    background-color: transparent;
-    flex: 1;
+input {
+    display: block;
+    width: 300px;
+    font-size: 15px;
 }
 
-.product-image {
-    margin: 8px;
-    border-radius: 4px;
+button {
+    display: block;
+    margin: 30px 0px 5px 0px;
+    width: 100%;
+    font-size: 15px;
 }
 
-.product-name {
-    margin-left: 8px;
-    font-size: 14px;
-    color: #374151;
+html, body {
+  height: 100%;
+  margin: 0;
 }
 
-.product-price {
-    margin-left: 8px;
-    font-weight: bold;
-    color: #dc2626;
-    font-size: 18px;
+.login-form {
+    padding: 50px;   
+    background-color: #c1d3f0;
+}
+
+
+.login-window {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.form-title {
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 50px;
+    font-weight: 800;
 }
 
 .footer-content {
-   text-align: center;
+    margin-top: 100%;
+    text-align: center;
 }
-
 

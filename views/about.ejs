@@ -4,7 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About</title>
+    <link rel="stylesheet" href="/css/about.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        (async function loadNav() {
+            const data = await fetch('/load-nav');
+            const navHtml = await data.text();
+            document.getElementsByTagName('header')[0].innerHTML = navHtml;
+        })();
+    </script>
 </head>
+<header>
+</header>
 <body>
     <h1>This is about page. Welcome!</h1>
 

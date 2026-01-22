@@ -6,25 +6,20 @@
     <title>Main Page</title>
     <link rel="stylesheet" href="/css/main.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        async function loadNav() {
+            const data = await fetch('/load-nav');
+            const navHtml = await data.text();
+            document.getElementsByClassName('header');
+            document.getElementsByTagName('header')[0].innerHTML = navHtml;
+        }
+        
+        loadNav();
+    </script>
 </head>
 <body>
     <div id="header-wrapper">
         <header>
-            <nav class="main-nav">
-                <div class="nav-item">
-                    <a class="nav-link" href="/main">Home</a>
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link" href="/about">About</a>
-                </div>
-                <div class="nav-item">
-                    <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
-                </div>
-                <div class="nav-item">
-                    <a class="nav-link" href="/login">Log in</a>
-                </div>
-            </div>
-        </nav>
         </header>
     </div>
     <div class="result-body">
@@ -133,3 +128,6 @@
 </html>
 
 
+
+
+ 
