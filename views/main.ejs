@@ -12,6 +12,12 @@
             const navHTML = await data.text();
             document.getElementsByTagName('header')[0].innerHTML = navHTML;
         })();
+        (async function loadProdSquares() {
+            const data = await fetch('/load-prod-sq');
+            const prodSqHTML = await data.text();
+            console.log(prodSqHTML);
+            document.getElementsByClassName('product-grid-container')[0].innerHTML = prodSqHTML;
+        })();
     </script>
 </head>
 <body>
@@ -23,18 +29,12 @@
         <div class="sidebar">
             <ul>
                 <h6>Categories</h6>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
-                <li class="cat-item"><a class="cat-link" href="/main">category 1</a></li>
+                <li class="cat-item"><a class="cat-link" href="/main">small</a></li>
+                <li class="cat-item"><a class="cat-link" href="/main">large </a></li>
             </ul>
         </div>
         <div class="product-grid-container">
-            <div class="product-item">
+            <!-- <div class="product-item">
                 <a class="product-link" href="/product">
                     <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
                     <figcaption class="product-name">bla bla bla</figcaption>
@@ -47,70 +47,7 @@
                     <figcaption class="product-name">bla bla bla</figcaption>
                     <figcaption class="product-price">8$</figcaption>
                 </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
-            <div class="product-item">
-                <a class="product-link" href="/product">
-                    <img class="product-image" src="/images/cactus.png" width="300" height="300" alt="tomcruise">
-                    <figcaption class="product-name">bla bla bla</figcaption>
-                    <figcaption class="product-price">8$</figcaption>
-                </a>
-            </div>
+            </div> -->
         </div>
     </div>
 </body>

@@ -133,7 +133,7 @@ function createProdListHTML(productList) {
             <input type="file" name="image" accept="image/png, image/jpeg"/>
             </div>
                 <div class="submit-block">
-                    <button class="submit-btn" type="submit" name="change" value="update">update</button>
+                    <button class="submit-btn" type="submit" name="change" value="  ate">update</button>
                     <button class="submit-btn" type="submit" name="change" value="remove">remove</button>
                 </div>
             </form>
@@ -177,6 +177,29 @@ app.get('/', (req, res) => {
 
 app.get('/main', (req, res) => {
     res.redirect('/');
+});
+
+
+app.get('/load-prod-sq', async (req, res) => {
+    const [productsList] = await pool.query(
+        "SELECT * FROM products"
+    );
+    
+    let prodSqHTML = '';
+    for(product of productsList)
+        prodSqHTML += `<div class="product-item">
+            <a class="product-link" href="/product">
+                <img class="product-image" src="${product.product_image}" width="300" height="300" alt="cactus image">
+                <figcaption class="product-name">
+                    ${product.product_name}
+                </figcaption>
+                <figcaption class="product-price">
+                    ${product.product_price}
+                </figcaption>
+            </a>
+        </div>`
+
+    res.send(prodSqHTML);
 });
 
 app.get('/about', (req, res) => {
@@ -291,10 +314,21 @@ app.get('/load-prod-list', async (req, res) => {
     }
 });
 
+function formatDate(date) {
+    return date.toLocaleString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+};
+
 // CARD
 app.get('/cart', (req, res) => {
-    // TODO: add price based on data from DB and quantity
-    // TODO: apply check for available quantity one more time
     res.render('cart.ejs');
 });
 
@@ -313,7 +347,7 @@ async function getUserOrders(userId) {
         `SELECT * FROM orders_list WHERE user_id = ? ORDER BY order_date DESC`,
         [userId]
     );
-    return groupOrders(rows); // Reuse your helper!
+    return groupOrders(rows);
 }
 
 app.get('/load-cart', async (req, res) => {
@@ -334,13 +368,12 @@ app.get('/load-cart', async (req, res) => {
             <td>${order.user_id}</td>
             <td>${order.items.map(item => item.product_id).join(', ')}</td> 
             <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
-            <td>${order.order_date}</td>
+            <td>${formatDate(order.order_date)}</td>
             <td>${order.paid}</td>
         </tr>`;
         ordersListHTML += orderHTML;
     }
 
-    console.log(user_db);
     res.send(ordersListHTML);
 });	
 
@@ -353,7 +386,7 @@ app.get('/edit', (req, res) => {
     }
 });
 
-app.post('/edit', async(req, res) => {
+app.post('/edit', async (req, res) => {
     if (auth_check(req.session.role, 'admin')) {
         const edit = req.body;
         let sql;
@@ -383,7 +416,6 @@ app.post('/search', (req, res) => {
     console.log(req.body);
     const searchQuery = req.body.searchQuery;
     // here DB querry with LIKE
-
     let products;
     // products = ..
     productList = rows[0];
@@ -392,12 +424,12 @@ app.post('/search', (req, res) => {
 });
 
 app.post('/search', (req, res) => {
-    console.log(req.body);
     const searchQuery = req.body.searchQuery;
-    
     // const products = // here DB querry with LIKE
 });
 
+
+// ORDERS
 function groupOrders(rows) {
     const ordersMap = new Map();
 
@@ -428,7 +460,7 @@ async function getAllOrders() {
     );
 
     return groupOrders(rows);
-}
+};
 
 app.get('/orders', async(req, res) => {
     if(req.session.role == 'admin') {
@@ -457,13 +489,12 @@ app.get('/orders-list', async (req, res) => {
                 <td>${order.user_id}</td>
                 <td>${order.items.map(item => item.product_id).join(', ')}</td> 
                 <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
-                <td>${order.order_date}</td>
+                <td>${formatDate(order.order_date)}</td>
                 <td>${order.paid}</td>
             </tr>`;
             ordersListHTML += orderHTML;
         }
         
-        console.log(orders_db);
         res.send(ordersListHTML);
     } else {
         res.status(403).send('Forbidden');

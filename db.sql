@@ -35,13 +35,13 @@ VALUES
 (
     'Charming Desert Cactus Small',
     'Add a touch of desert charm to your space with this low-maintenance cactus. Perfect for desks, shelves, or small corners. Ideal for beginners or busy plant lovers 🌵',
-    'public/images/cactus.png',
+    '/images/cactus.png',
     15.00
 ),
 (
     'Charming Desert Cactus Big',
     'Add a touch of desert charm to your space with this low-maintenance cactus. Perfect for desks, shelves, or small corners. Ideal for beginners or busy plant lovers 🌵',
-    'public/images/cactus.png',
+    '/images/cactus.png',
     25.00
 );
 

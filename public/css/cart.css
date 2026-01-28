@@ -121,6 +121,20 @@ li a {
     display: block;
 }
 
+.orders-table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table {
+    margin-top: 10px;
+    border: 1px solid;
+}
+
+th, td {
+    padding: 10px;
+}
+
 .footer-content {
    text-align: center;
 }
