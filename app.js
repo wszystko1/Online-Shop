@@ -74,7 +74,7 @@ const nav_logged_html = `
             <div class="nav-drop">
                 <a class="nav-link" href="/account">Account</a>
                 <div class="nav-drop-content">
-                    <a class="nav-drop-link" href="/basket">basket</a>
+                    <a class="nav-drop-link" href="/cart">cart</a>
                     <a class="nav-drop-link" href="/log-out">log out</a>
                 </div>
             </div>
@@ -101,7 +101,7 @@ const nav_admin_html = `
                 <div class="nav-drop-content">
                     <a class="nav-drop-link" href="/orders">orders</a>
                     <a class="nav-drop-link" href="/edit">edit</a>
-                    <a class="nav-drop-link" href="/basket">basket</a>
+                    <a class="nav-drop-link" href="/cart">cart</a>
                     <a class="nav-drop-link" href="/log-out">log out</a>
                 </div>
             </div>
@@ -187,7 +187,6 @@ app.get('/product', (req, res) => {
     res.render('product.ejs');
 });
 
-
 // LOGIN & AUTHENTICATION
 function auth_check(actualRole, requiredRole) {
     return actualRole === requiredRole;
@@ -254,7 +253,6 @@ app.get('/create-account', (req, res) => {
 
 app.post('/create-account', async (req, res) => {
     const {username, password} = req.body;
-
     const userExists = await findUserByUsername(username);
 
     if(userExists){
@@ -279,7 +277,6 @@ app.get('/load-nav', (req, res) => {
 });
 
 app.get('/load-prod-list', async (req, res) => {
-
     if(auth_check(req.session.role, 'admin')) {
         try {
             const rows = await pool.query('SELECT * FROM products');
@@ -292,10 +289,9 @@ app.get('/load-prod-list', async (req, res) => {
     } else {
         res.status(403).send('Forbidden');
     }
-    // add auth_check
 });
 
-// BASKET + CARD
+// CARD
 app.get('/cart', (req, res) => {
     // TODO: add price based on data from DB and quantity
     // TODO: apply check for available quantity one more time
@@ -304,12 +300,49 @@ app.get('/cart', (req, res) => {
 
 app.post('/update-cart', (req, res) => {
     // TODO: check max quantity in DB & if requested is over it react with some browser message
+
     if(!req.session.cart) {
         req.session.cart = [];   
     }
     req.session.cart.push(req.body);
     res.sendStatus(200);
 });
+
+async function getUserOrders(userId) {
+    const [rows] = await pool.query(
+        `SELECT * FROM orders_list WHERE user_id = ? ORDER BY order_date DESC`,
+        [userId]
+    );
+    return groupOrders(rows); // Reuse your helper!
+}
+
+app.get('/load-cart', async (req, res) => {
+    let ordersListHTML = `<tr>
+            <th>orderID</th>    
+            <th>user_id</th>
+            <th>products</th>
+            <th>quantity</th>
+            <th>date</th>    
+            <th>paid</th>    
+        </tr>`;
+
+    const user_db = await getUserOrders(req.session.userId);
+
+    for(const order of user_db) {
+        const orderHTML = `<tr>
+            <td>${order.order_id}</td>
+            <td>${order.user_id}</td>
+            <td>${order.items.map(item => item.product_id).join(', ')}</td> 
+            <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
+            <td>${order.order_date}</td>
+            <td>${order.paid}</td>
+        </tr>`;
+        ordersListHTML += orderHTML;
+    }
+
+    console.log(user_db);
+    res.send(ordersListHTML);
+});	
 
 // EDIT VIEW
 app.get('/edit', (req, res) => {
@@ -346,23 +379,24 @@ app.post('/edit', async(req, res) => {
     }
 });
 
+app.post('/search', (req, res) => {
+    console.log(req.body);
+    const searchQuery = req.body.searchQuery;
+    // here DB querry with LIKE
 
-app.get('/load-basket', (req, res) => {
-    // TODO: query to db for open order
+    let products;
+    // products = ..
+    productList = rows[0];
+    prodListHTML = createProdTilesHTML(productList);
+    res.send(prodListHTML); 
 });
 
-// to jest do zaklepania jak będę miał bazę
-// app.post('/search', (req, res) => {
-//     console.log(req.body);
-//     const searchQuery = req.body.searchQuery;
-//     // here DB querry with LIKE
-
-//     let products;
-//     // products = ..
-//     productList = rows[0];
-//     prodListHTML = createProdTilesHTML(productList);
-//     res.send(prodListHTML); 
-// });
+app.post('/search', (req, res) => {
+    console.log(req.body);
+    const searchQuery = req.body.searchQuery;
+    
+    // const products = // here DB querry with LIKE
+});
 
 function groupOrders(rows) {
     const ordersMap = new Map();

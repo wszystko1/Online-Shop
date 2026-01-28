@@ -13,13 +13,11 @@
             document.getElementsByTagName('header')[0].innerHTML = navHTML;
         })();
         
-        (async function loadBasket() {
+        (async function loadCart() {
             const data = await fetch('/load-cart');
-            const navHTML = await data.text();
-            document.getElementsByClassName('result-body')[0].innerHTML = navHTML;
+            const navCart = await data.text();
+            document.getElementsByClassName('orders-table')[0].innerHTML = navCart;
         })();
-
-        loadBasket();
     </script>
 </head>
 <body onload="script();">
@@ -28,7 +26,9 @@
         </header>
     </div>
     <div class="result-body">
-
+        <table class="orders-table">
+            
+        </table>
     </div>
 </body>
 
