@@ -1,0 +1,109 @@
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    background-color: #f6f7fb;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:visited {
+    color: black;
+}
+
+h6 {
+    font-size: 17px;
+    text-decoration: none;
+    margin: 0px;
+}
+
+.nav-item:nth-of-type(3) {
+    margin-left: auto;
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 12px 24px;
+    background-color: #c1d3f0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.main-nav div a {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: black;
+}
+
+.main-nav div a:hover {
+    background-color: #f3f4f6;
+}
+
+.main-nav div a:active {
+    background-color: #2196F3;
+}
+
+.main-nav input[type="text"] {
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid #d1d5db;
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.main-nav input[type="text"]:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.nav-drop {
+    position: relative;
+    display: inline-block;
+}
+
+.nav-drop-content {
+    display: none;
+    position: absolute;
+    background-color: #ffffff;
+    /* min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1; */
+}
+
+.nav-drop-link {
+    display: block;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: black;
+}
+
+.nav-drop:hover .nav-drop-content {display: block;}
+
+.nav-drop:hover .nav-drop-btn {background-color: #3e8e41;}
+
+.orders-table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table {
+    margin-top: 10px;
+    border: 1px solid;
+}
+
+th, td {
+    padding: 10px;
+}
+
+.footer-content {
+   text-align: center;
+   margin-top: 600px;
+}
