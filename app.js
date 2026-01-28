@@ -27,52 +27,17 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// DATABASES
+// DB
 const mysql = require('mysql2');
 
 const pool = mysql.createPool({
-  host: '127.0.0.1',
+  host: 'localhost',
   user: 'root',
-  password: 'root',
-  database: 'online_shop'
+  password: 'djfHDfndf',
+  database: 'app_db'
 }).promise();
 
-
-// REGISTRATION
- async function addUser(username, password){
-   const result = await pool.query('insert into users (username, password, role) values (?,?,?)',
-      [username, password, "user"]);
-   return result;
-}
-
-// LOGIN 
-async function getUsers(username, password) {
-    const [rows] = await pool.query(
-        "SELECT id, username, role FROM users WHERE username = ? AND password = ?",
-        [username, password]
-    );
-    
-    if (rows.length !== 1) {
-        return null;
-    }
-    
-    return rows[0];
-}
-
-async function findUserByUsername(username) {
-    const [rows] = await pool.query(
-        "SELECT id, username, password, role FROM users WHERE username = ?",
-        [username]
-    );
-
-    if (rows.length === 0){
-        return false;
-    }
-
-    return true;
-}
-
-// CONST VARIABLES
+// HTML 
 const nav_notlogged_html = `
     <nav class="main-nav">
         <div class="nav-item">
@@ -82,7 +47,9 @@ const nav_notlogged_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
+            <form class="nav-form" method="post" action="/search">
+                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
+            </form>    
         </div>
         <div class="nav-item">
             <a class="nav-link" href="/login">Log in</a>
@@ -99,7 +66,9 @@ const nav_logged_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
+            <form class="nav-form" method="post" action="/search">
+                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
+            </form>    
         </div>
         <div class="nav-item">
             <div class="nav-drop">
@@ -122,7 +91,9 @@ const nav_admin_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <input class="nav-search" type="text" placeholder="Search.." inputmode="search">
+            <form class="nav-form" method="post" action="/search">
+                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
+            </form>    
         </div>
         <div class="nav-item">
             <div class="nav-drop">
@@ -137,17 +108,6 @@ const nav_admin_html = `
         </div>
     </nav>
 `;
-
-// DYNAMIC ELEMENTS
-app.get('/load-nav', (req, res) => {
-    if (auth_check(req.session.role, 'admin')) {
-        res.send(nav_admin_html);
-    } else if(auth_check(req.session.role, 'user')) {
-        res.send(nav_logged_html);
-    } else {
-        res.send(nav_notlogged_html);
-    }
-});
 
 function createProdListHTML(productList) {
     let listInnerHTML = "";
@@ -208,19 +168,7 @@ function createProdListHTML(productList) {
             </form>
         </div>`;
     return listInnerHTML
-}
-
-app.get('/load-prod-list', async (req, res) => {
-    // add auth_check
-    try {
-        const rows = await pool.query('SELECT * FROM products');
-        productList = rows[0];
-        prodListHTML = createProdListHTML(productList); 
-        res.send(prodListHTML);        
-    } catch (err) {
-        // res.status(500).json({ error: 'Failed to fetch products' });
-    }    
-});
+};
 
 // VIEWS NAVIGATION
 app.get('/', (req, res) => {
@@ -239,10 +187,22 @@ app.get('/product', (req, res) => {
     res.render('product.ejs');
 });
 
+
 // LOGIN & AUTHENTICATION
 function auth_check(actualRole, requiredRole) {
     return actualRole === requiredRole;
-}
+};
+
+async function getUsers(username, password) {
+    const [rows] = await pool.query(
+        "SELECT id, username, role FROM users WHERE username = ? AND password = ?",
+        [username, password]
+    );
+    if (rows.length !== 1) {
+        return null;
+    }
+    return rows[0];
+};
 
 app.get('/login', (req, res) => {
     res.render('login.ejs');
@@ -251,10 +211,11 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     const user = await getUsers(username, password);    
-    console.log(user);
     if (user) {
         req.session.userId = user.id;
         req.session.role = user.role;
+        
+        // TODO: add querry to db to add open
         res.redirect('/main');
     } else {
         // check if this works
@@ -274,6 +235,19 @@ app.get('/log-out', (req, res) => {
 });
 
 // ACCOUNT CREATION
+async function findUserByUsername(username) {
+    const [rows] = await pool.query(
+        "SELECT id, username, password, role FROM users WHERE username = ?",
+        [username]
+    );
+    return rows.length > 0
+};
+
+async function addUser(username, password){
+    const result = await pool.query('insert into users (username, password, role) values (?,?,?)', [username, password, "user"]);
+   return result;
+};
+
 app.get('/create-account', (req, res) => {
      res.render('create-account.ejs');
 });
@@ -293,20 +267,47 @@ app.post('/create-account', async (req, res) => {
     }
 });
 
-// BASKET + CARD
-app.get('/basket', (req, res) => {
-    // TODO: add price based on data from DB and quantity
-    // TODO: apply check for available quantity one more time
-    res.render('basket.ejs');
+// DYNAMIC ELEMENTS
+app.get('/load-nav', (req, res) => {
+    if (auth_check(req.session.role, 'admin')) {
+        res.send(nav_admin_html);
+    } else if(auth_check(req.session.role, 'user')) {
+        res.send(nav_logged_html);
+    } else {
+        res.send(nav_notlogged_html);
+    }
 });
 
-app.post('/cart', (req, res) => {
+app.get('/load-prod-list', async (req, res) => {
+
+    if(auth_check(req.session.role, 'admin')) {
+        try {
+            const rows = await pool.query('SELECT * FROM products');
+            productList = rows[0];
+            prodListHTML = createProdListHTML(productList); 
+            res.send(prodListHTML);        
+        } catch (err) {
+            // res.status(500).json({ error: 'Failed to fetch products' });
+        }
+    } else {
+        res.status(403).send('Forbidden');
+    }
+    // add auth_check
+});
+
+// BASKET + CARD
+app.get('/cart', (req, res) => {
+    // TODO: add price based on data from DB and quantity
+    // TODO: apply check for available quantity one more time
+    res.render('cart.ejs');
+});
+
+app.post('/update-cart', (req, res) => {
     // TODO: check max quantity in DB & if requested is over it react with some browser message
     if(!req.session.cart) {
         req.session.cart = [];   
     }
     req.session.cart.push(req.body);
-    console.log(req.session.cart);
     res.sendStatus(200);
 });
 
@@ -345,32 +346,57 @@ app.post('/edit', async(req, res) => {
     }
 });
 
-// ORDER VIEW 
-const orders_db = [
-    {
-        orderID: 1,
-        is_logged: 'yes',
-        username: 'max',
-        order: [['cactus_big', 3], ['cactus_small', 1]],
-        price: 250
-    },
-    {
-        orderID: 2,
-        is_logged: 'no',
-        username: '',
-        order: [['cactus_big', 3], ['cactus_small', 1]],
-        price: 250
-    },
-    {
-        orderID: 3,
-        is_logged: 'no',
-        username: '',
-        order: [['cactus_big', 3]],
-        price: 250
-    }
-];
 
-app.get('/orders', (req, res) => {
+app.get('/load-basket', (req, res) => {
+    // TODO: query to db for open order
+});
+
+// to jest do zaklepania jak będę miał bazę
+// app.post('/search', (req, res) => {
+//     console.log(req.body);
+//     const searchQuery = req.body.searchQuery;
+//     // here DB querry with LIKE
+
+//     let products;
+//     // products = ..
+//     productList = rows[0];
+//     prodListHTML = createProdTilesHTML(productList);
+//     res.send(prodListHTML); 
+// });
+
+function groupOrders(rows) {
+    const ordersMap = new Map();
+
+    for (const row of rows) {
+        if (!ordersMap.has(row.order_id)) {
+            ordersMap.set(row.order_id, {
+                order_id: row.order_id,
+                user_id: row.user_id,
+                order_date: row.order_date,
+                paid: row.paid,
+                items: [] 
+            });
+        }
+
+        const order = ordersMap.get(row.order_id);
+        order.items.push({
+            product_id: row.product_id, 
+            quantity: row.quantity
+        });
+    }
+
+    return Array.from(ordersMap.values());
+}
+
+async function getAllOrders() {
+    const [rows] = await pool.query(
+        `SELECT * FROM orders_list`
+    );
+
+    return groupOrders(rows);
+}
+
+app.get('/orders', async(req, res) => {
     if(req.session.role == 'admin') {
         res.render('orders.ejs');
     } else {
@@ -378,25 +404,32 @@ app.get('/orders', (req, res) => {
     }
 });
 
-app.get('/orders-list', (req, res) => {
+app.get('/orders-list', async (req, res) => {
     if (auth_check(req.session.role, 'admin')) {
         let ordersListHTML = `<tr>
             <th>orderID</th>    
-            <th>is_logged</th>    
-            <th>username</th>    
-            <th>order</th>    
-            <th>price</th>    
+            <th>user_id</th>
+            <th>products</th>
+            <th>quantity</th>
+            <th>date</th>    
+            <th>paid</th>    
         </tr>`;
+
+        const orders_db = await getAllOrders();
+        
         for(const order of orders_db) {
             const orderHTML = `<tr>
-                <td>` + order.orderID + `</td>
-                <td>` + order.is_logged + `</td>
-                <td>` + order.username + `</td>
-                <td>` + order.order.map(pair => pair.join(',')).join('; ') + `</td>
-                <td>` + order.price  + `</td>
-            </tr>`
+                <td>${order.order_id}</td>
+                <td>${order.user_id}</td>
+                <td>${order.items.map(item => item.product_id).join(', ')}</td> 
+                <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
+                <td>${order.order_date}</td>
+                <td>${order.paid}</td>
+            </tr>`;
             ordersListHTML += orderHTML;
         }
+        
+        console.log(orders_db);
         res.send(ordersListHTML);
     } else {
         res.status(403).send('Forbidden');

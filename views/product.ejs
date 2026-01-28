@@ -21,13 +21,11 @@
             }
         }
     
-        async function loadNav() {
+        (async function loadNav() {
             const data = await fetch('/load-nav');
-            const navHtml = await data.text();
-            document.getElementsByTagName('header')[0].innerHTML = navHtml;
-        }
-        
-        loadNav();
+            const navHTML = await data.text();
+            document.getElementsByTagName('header')[0].innerHTML = navHTML;
+        })();
 
         async function updateCart() {
             const newProduct = {
@@ -35,7 +33,7 @@
                 productQuantity: parseInt(document.getElementsByClassName('product-cnt')[0].innerText),
             }
             try {
-                const response = await fetch("/cart", {
+                const response = await fetch("/update-cart", {
                     method: "post",
                     credentials: 'include',
                     headers: {"Content-Type": "application/json"},

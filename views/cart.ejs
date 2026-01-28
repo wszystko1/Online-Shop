@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+    <link rel="stylesheet" href="/css/cart.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        (async function loadNav() {
+            const data = await fetch('/load-nav');
+            const navHTML = await data.text();
+            document.getElementsByTagName('header')[0].innerHTML = navHTML;
+        })();
+        
+        (async function loadBasket() {
+            const data = await fetch('/load-cart');
+            const navHTML = await data.text();
+            document.getElementsByClassName('result-body')[0].innerHTML = navHTML;
+        })();
+
+        loadBasket();
+    </script>
+</head>
+<body onload="script();">
+    <div id="header-wrapper">
+        <header>
+        </header>
+    </div>
+    <div class="result-body">
+
+    </div>
+</body>
+
+<footer>
+    <small>
+        <div class="footer-content">
+            Copyright © 2023 Best Duo Ever. All Rights Reserved.
+        </div>
+    </small>    
+</footer>
+</html>
+
+
+
+
+ 
