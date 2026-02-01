@@ -39,12 +39,11 @@
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(newProduct)
                 });
-                // console.log(await response.json());
-                console.log(response);
             } catch(e) {
                     console.error(e);
             }
         }
+
     </script>
 </head>
 <body>
@@ -54,21 +53,33 @@
     </div>
     <div class="result-body">
         <div class="product">
-            <img class="product-image" src="/images/cactus.png" width="300" height="300"></img>
+            <img class="product-image"
+                src="<%= product.product_image %>"
+                width="300" height="300">
+
             <div class="product-info">
                 <div class="product-desc">
-                    <h6 class="product-name">Charming Desert Cactus</h6>
-                    <p> Add a touch of desert charm to your space with this low-maintenance cactus. </p>
-                    <p>Perfect for desks, shelves, or small corners, it thrives with minimal watering and care.</p>
-                    <p>Its unique shape and natural resilience make it both stylish and symbolic.</p>
-                    <p>Ideal for beginners or busy plant lovers, this cactus brings simple beauty that lasts 🌵</p>
+                    <div class="product-desc">
+                        <h6 class="product-name"><%= product.product_name %></h6>
+                        <% 
+                            const sentences = product.product_desc.split('. ');
+                            sentences.forEach(sentence => { 
+                            if (sentence.trim() !== '') { 
+                        %>
+                            <p><%= sentence %>.</p>
+                        <% 
+                            } 
+                            }) 
+                        %>
+                    </div>
                 </div>
+
                 <div class="cnt-control">
-                    <!-- TODO: potencially use something different than onlicks() -->
                     <button class="inc-btn" onclick="increase()">+</button>
                     <label class="product-cnt">1</label>
                     <button class="dec-btn" onclick="decrease()">-</button>
                 </div>
+
                 <button class="add-btn" onclick="updateCart()">Add to Bag</button>
             </div>
         </div>

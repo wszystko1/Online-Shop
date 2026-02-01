@@ -11,11 +11,28 @@
             const data = await fetch('/load-nav');
             const navHTML = await data.text();
             document.getElementsByTagName('header')[0].innerHTML = navHTML;
+
+            const form = document.querySelector('.nav-form');
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(form);
+                const searchQuery = formData.get('searchQuery');
+
+                const res = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ searchQuery })
+                });
+
+                const html = await res.text();
+                document.querySelector('.product-grid-container').innerHTML = html;
+            });
         })();
         (async function loadProdSquares() {
             const data = await fetch('/load-prod-sq');
             const prodSqHTML = await data.text();
-            console.log(prodSqHTML);
             document.getElementsByClassName('product-grid-container')[0].innerHTML = prodSqHTML;
         })();
     </script>

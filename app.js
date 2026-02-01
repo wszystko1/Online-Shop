@@ -47,7 +47,7 @@ const nav_notlogged_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <form class="nav-form" method="post" action="/search">
+            <form class="nav-form">
                 <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
             </form>    
         </div>
@@ -66,7 +66,7 @@ const nav_logged_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <form class="nav-form" method="post" action="/search">
+            <form class="nav-form">
                 <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
             </form>    
         </div>
@@ -91,7 +91,7 @@ const nav_admin_html = `
             <a class="nav-link" href="/about">About</a>
         </div>
         <div class="nav-item">
-            <form class="nav-form" method="post" action="/search">
+            <form class="nav-form">
                 <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
             </form>    
         </div>
@@ -179,35 +179,47 @@ app.get('/main', (req, res) => {
     res.redirect('/');
 });
 
+app.get('/product', async (req, res) => {
+    const product_name = req.query.name;
+    const [rows] = await pool.query(
+        `SELECT * FROM products WHERE product_name = ?`,
+        [product_name]
+    );
+
+    res.render('product.ejs', {product: rows[0]});
+});
+
+function createProdGrid(productsList) {
+    let prodSqHTML = '';
+    for(product of productsList) {
+        prodSqHTML += `
+            <div class="product-item">
+                <a class="product-link" href="/product?name=${encodeURIComponent(product.product_name)}">
+                    <img class="product-image" src="${product.product_image}" width="300" height="300" alt="cactus image">
+                    <figcaption class="product-name">
+                        ${product.product_name}
+                    </figcaption>
+                    <figcaption class="product-price">
+                        ${product.product_price}
+                    </figcaption>
+                </a>
+            </div>`;
+    }
+
+    return prodSqHTML;
+}
 
 app.get('/load-prod-sq', async (req, res) => {
     const [productsList] = await pool.query(
         "SELECT * FROM products"
     );
     
-    let prodSqHTML = '';
-    for(product of productsList) {
-        prodSqHTML += `<div class="product-item">
-            <a class="product-link" href="/product">
-                <img class="product-image" src="${product.product_image}" width="300" height="300" alt="cactus image">
-                <figcaption class="product-name">
-                    ${product.product_name}
-                </figcaption>
-                <figcaption class="product-price">
-                    ${product.product_price}
-                </figcaption>
-            </a>
-        </div>`;
-    }
+    const prodSqHTML = createProdGrid(productsList)
     res.send(prodSqHTML);
 });
 
 app.get('/about', (req, res) => {
     res.render('about.ejs');
-});
-
-app.get('/product', (req, res) => {
-    res.render('product.ejs');
 });
 
 // LOGIN & AUTHENTICATION
@@ -354,6 +366,36 @@ async function quantityByName(productName) {
     return rows[0].product_quantity;
 }
 
+async function cart2Order(cart) {
+    if (!cart || cart.length === 0) return;
+
+    const currentMaxId = await getMaxId();
+    const newOrderId = currentMaxId + 1;
+    const orderDate = new Date().toISOString().slice(0, 10);
+
+    for (const item of cart) {
+        await pool.query(
+            `INSERT INTO orders_list (order_id, product_name, quantity, order_date, paid) 
+             VALUES (?, ?, ?, ?,?)`,
+            [
+                newOrderId, 
+                item.productName, 
+                item.quantityOrdered, 
+                orderDate,
+                'no'
+            ]
+        );
+    }
+    return newOrderId;
+}
+
+async function getMaxId() {//globalny max order_id
+    const [rows] = await pool.query(
+        "SELECT MAX(order_id) as maxVal FROM orders_list"
+    );
+    return rows[0].maxVal || 0;
+}
+
 app.post('/update-cart', async (req, res) => {
     let quantityOrdered = parseInt(req.body.productQuantity);
     const productName = req.body.productName;
@@ -374,7 +416,17 @@ app.post('/update-cart', async (req, res) => {
         if (!req.session.cart) {
             req.session.cart = [];
         }
-        req.session.cart.push({ productName, quantityOrdered });
+
+        const existingItem = req.session.cart.find(item => item.productName === productName);
+
+        if (existingItem){
+            existingItem.quantityOrdered += Number(quantityOrdered);
+        }
+        else {
+            req.session.cart.push({productName, quantityOrdered: Number(quantityOrdered)});
+        }
+        
+        console.log(req.session.cart);
         return res.sendStatus(200);
     }
 });
@@ -450,15 +502,21 @@ app.post('/edit', async (req, res) => {
     }
 });
 
-app.post('/search', (req, res) => {
-    console.log(req.body);
+async function searchDB(search){
+    const [rows] = await pool.query(
+        `SELECT * FROM products 
+         WHERE product_name LIKE ? 
+         OR product_desc LIKE ?`,
+        [`%${search}%`, `%${search}%`] 
+    );
+    return rows;
+}
+
+app.post('/search', async (req, res) => {
     const searchQuery = req.body.searchQuery;
-    // here DB querry with LIKE
-    let products;
-    // products = ..
-    productList = rows[0];
-    prodListHTML = createProdTilesHTML(productList);
-    res.send(prodListHTML); 
+    const productsList = await searchDB(searchQuery);
+    const prodSqHTML = createProdGrid(productsList)
+    res.send(prodSqHTML); 
 });
 
 app.post('/search', (req, res) => {
