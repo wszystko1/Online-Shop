@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS products (
     product_name VARCHAR(100) NOT NULL,
     product_desc TEXT,
     product_image VARCHAR(255),
-    product_price DECIMAL(10,2) NOT NULL
+    product_price DECIMAL(10,2) NOT NULL,
+    product_quantity INT
 );
 
 CREATE TABLE IF NOT EXISTS orders_list (
@@ -30,19 +31,21 @@ INSERT INTO users (username, password, role) VALUES
 ('alex', '1234', 'user');
 
 INSERT INTO products 
-(product_name, product_desc, product_image, product_price) 
+(product_name, product_desc, product_image, product_price, product_quantity)
 VALUES
 (
     'Charming Desert Cactus Small',
     'Add a touch of desert charm to your space with this low-maintenance cactus. Perfect for desks, shelves, or small corners. Ideal for beginners or busy plant lovers 🌵',
     '/images/cactus.png',
-    15.00
+    15.00,
+    5
 ),
 (
     'Charming Desert Cactus Big',
     'Add a touch of desert charm to your space with this low-maintenance cactus. Perfect for desks, shelves, or small corners. Ideal for beginners or busy plant lovers 🌵',
     '/images/cactus.png',
-    25.00
+    25.00,
+    10
 );
 
 INSERT INTO orders_list

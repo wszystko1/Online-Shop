@@ -186,7 +186,7 @@ app.get('/load-prod-sq', async (req, res) => {
     );
     
     let prodSqHTML = '';
-    for(product of productsList)
+    for(product of productsList) {
         prodSqHTML += `<div class="product-item">
             <a class="product-link" href="/product">
                 <img class="product-image" src="${product.product_image}" width="300" height="300" alt="cactus image">
@@ -197,8 +197,8 @@ app.get('/load-prod-sq', async (req, res) => {
                     ${product.product_price}
                 </figcaption>
             </a>
-        </div>`
-
+        </div>`;
+    }
     res.send(prodSqHTML);
 });
 
@@ -332,15 +332,53 @@ app.get('/cart', (req, res) => {
     res.render('cart.ejs');
 });
 
-app.post('/update-cart', (req, res) => {
-    // TODO: check max quantity in DB & if requested is over it react with some browser message
-
-    if(!req.session.cart) {
-        req.session.cart = [];   
+async function quantityByName(productName) {
+    const [rows] = await pool.query(
+        "SELECT product_quantity FROM products WHERE product_name = ?",
+        [productName]
+    );
+    if (rows.length === 0) {
+        return null;
     }
-    req.session.cart.push(req.body);
-    res.sendStatus(200);
+    return rows[0].product_quantity;
+}
+
+async function quantityByName(productName) {
+    const [rows] = await pool.query(
+        "SELECT product_quantity FROM products WHERE product_name = ?",
+        [productName]
+    );
+    if (rows.length === 0) {
+        return null;
+    }
+    return rows[0].product_quantity;
+}
+
+app.post('/update-cart', async (req, res) => {
+    let quantityOrdered = parseInt(req.body.productQuantity);
+    const productName = req.body.productName;
+    const quantityMax = await quantityByName(productName);
+
+    if (quantityMax === null) {
+        return res.status(404).send("Product not found");
+    }
+    if (quantityMax < quantityOrdered) {
+        return res.status(400).send("Not enough stock"); 
+    } else {
+        // console.log("Updating DB with value:", quantityMax - quantityOrdered);
+        // await pool.query(
+        //     "UPDATE products SET product_quantity = ? WHERE product_name = ?",
+        //     [quantityMax - quantityOrdered, productName]
+        // );
+
+        if (!req.session.cart) {
+            req.session.cart = [];
+        }
+        req.session.cart.push({ productName, quantityOrdered });
+        return res.sendStatus(200);
+    }
 });
+
 
 async function getUserOrders(userId) {
     const [rows] = await pool.query(
@@ -427,7 +465,6 @@ app.post('/search', (req, res) => {
     const searchQuery = req.body.searchQuery;
     // const products = // here DB querry with LIKE
 });
-
 
 // ORDERS
 function groupOrders(rows) {
