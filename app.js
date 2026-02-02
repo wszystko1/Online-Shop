@@ -407,6 +407,8 @@ async function getMaxId() {
 }
 
 app.post('/update-cart', async (req, res) => {
+    console.log(req.session.userId);
+
     let quantityOrdered = parseInt(req.body.productQuantity);
     const productName = req.body.productName;
     const quantityMax = await quantityByName(productName);
@@ -435,8 +437,7 @@ app.post('/update-cart', async (req, res) => {
         else {
             req.session.cart.push({productName, quantityOrdered: Number(quantityOrdered)});
         }
-        
-        console.log(req.session.cart);
+
         return res.sendStatus(200);
     }
 });
@@ -460,19 +461,20 @@ app.get('/load-cart', async (req, res) => {
             <th>paid</th>    
         </tr>`;
 
-    const user_db = await getUserOrders(req.session.userId);
+    // const user_db = await getUserOrders(req.session.userId);
 
-    for(const order of user_db) {
-        const orderHTML = `<tr>
-            <td>${order.order_id}</td>
-            <td>${order.user_id}</td>
-            <td>${order.items.map(item => item.product_id).join(', ')}</td> 
-            <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
-            <td>${formatDate(order.order_date)}</td>
-            <td>${order.paid}</td>
-        </tr>`;
-        html += orderHTML;
-    }
+    
+    // for(const order of user_db) {
+    //     const orderHTML = `<tr>
+    //         <td>${order.order_id}</td>
+    //         <td>${order.user_id}</td>
+    //         <td>${order.items.map(item => item.product_id).join(', ')}</td> 
+    //         <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
+    //         <td>${formatDate(order.order_date)}</td>
+    //         <td>${order.paid}</td>
+    //     </tr>`;
+    //     html += orderHTML;
+    // }
     res.send(html);
 });	
 
@@ -605,8 +607,8 @@ app.get('/orders-list', async (req, res) => {
     }    
 });
 
-app.post('/buy', async (res, req) => {
-    cart2Order(req.session.cart);
+app.post('/buy', async (req, res) => {
+    await cart2Order(req.session.cart);
 });
 
 // SERVER
