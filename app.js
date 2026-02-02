@@ -8,6 +8,7 @@ const session = require('express-session');
 const port = 3000;
 const app = express();
 
+// SESSION
 app.use(session({
     secret: 'kjw534njksdfj',
     resave: false,
@@ -37,138 +38,21 @@ const pool = mysql.createPool({
   database: 'app_db'
 }).promise();
 
-// HTML 
-const nav_notlogged_html = `
-    <nav class="main-nav">
-        <div class="nav-item">
-            <a class="nav-link" href="/main">Home</a>
-        </div>
-        <div class="nav-item">
-            <a class="nav-link" href="/about">About</a>
-        </div>
-        <div class="nav-item">
-            <form class="nav-form">
-                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
-            </form>    
-        </div>
-        <div class="nav-item">
-            <a class="nav-link" href="/login">Log in</a>
-        </div>
-    </nav>
-`;
+const { auth_check } = require('./utils/auth.js');
+const {
+    getUsers,
+    getMaxId,
+    getUserOrders,
+    getAllOrders
+} = require('./utils/query.js')(pool);
 
-const nav_logged_html = `
-    <nav class="main-nav">
-        <div class="nav-item">
-            <a class="nav-link" href="/main">Home</a>
-        </div>
-        <div class="nav-item">
-            <a class="nav-link" href="/about">About</a>
-        </div>
-        <div class="nav-item">
-            <form class="nav-form">
-                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
-            </form>    
-        </div>
-        <div class="nav-item">
-            <div class="nav-drop">
-                <a class="nav-link" href="/account">Account</a>
-                <div class="nav-drop-content">
-                    <a class="nav-drop-link" href="/cart">cart</a>
-                    <a class="nav-drop-link" href="/log-out">log out</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-`;
-
-const nav_admin_html = `
-    <nav class="main-nav">
-        <div class="nav-item">
-            <a class="nav-link" href="/main">Home</a>
-        </div>
-        <div class="nav-item">
-            <a class="nav-link" href="/about">About</a>
-        </div>
-        <div class="nav-item">
-            <form class="nav-form">
-                <input class="nav-search" name="searchQuery" type="text" placeholder="Search.." inputmode="search">
-            </form>    
-        </div>
-        <div class="nav-item">
-            <div class="nav-drop">
-                <a class="nav-link" href="/account">Account</a>
-                <div class="nav-drop-content">
-                    <a class="nav-drop-link" href="/orders">orders</a>
-                    <a class="nav-drop-link" href="/edit">edit</a>
-                    <a class="nav-drop-link" href="/cart">cart</a>
-                    <a class="nav-drop-link" href="/log-out">log out</a>
-                </div>
-            </div>
-        </div>
-    </nav>
-`;
-
-function createProdListHTML(productList) {
-    let listInnerHTML = "";
-    for(let i = 0; i < productList.length; i++) {
-        listInnerHTML += `
-        <div class="product">
-            <form method="post" >
-            <div class="form-grid">
-            <div class="form-header">feature</div>
-            <div class="form-header">edit</div>
-            <label>id</label>
-            <input type="text" name="id" value="${productList[i].product_id}" readonly/>
-            <label>name</label>
-            <input type="text" name="name" value="${productList[i].product_name}"/>
-
-            <label>description</label>
-            <input type="text" name="desc" value="${productList[i].product_desc}"/>
-
-            <label>price</label>
-            <input type="text" name="price" value="${productList[i].product_price}"/>
-
-            <label>image</label>
-            <input type="file" name="image" accept="image/png, image/jpeg"/>
-            </div>
-                <div class="submit-block">
-                    <button class="submit-btn" type="submit" name="change" value="  ate">update</button>
-                    <button class="submit-btn" type="submit" name="change" value="remove">remove</button>
-                </div>
-            </form>
-        </div>`;
-    }
-
-    listInnerHTML += `
-        <div class="product">
-            <form method="post" >
-                <div class="form-grid">
-                    <div class="form-header">feature</div>
-                    <div class="form-header">add</div>
-                    
-                    <label>id</label>
-                    <input type="text" name="id" value=""/>
-
-                    <label>name</label>
-                    <input type="text" name="name" value=""/>
-
-                    <label>description</label>
-                    <input type="text" name="desc" value=""/>
-
-                    <label>price</label>
-                    <input type="text" name="price" value=""/>
-
-                    <label>image</label>
-                    <input type="file" name="image" accept="image/png, image/jpeg">
-                </div>
-                <div class="submit-block">
-                    <button class="submit-btn" type="submit" name="change" value="add">add</button>
-                </div>
-            </form>
-        </div>`;
-    return listInnerHTML
-};
+const {
+    nav_notlogged_html,
+    nav_admin_html,
+    nav_logged_html,
+    createProdGrid,
+    createProdListHTML
+} = require('./utils/html.js');
 
 // VIEWS NAVIGATION
 app.get('/', (req, res) => {
@@ -189,25 +73,6 @@ app.get('/product', async (req, res) => {
     res.render('product.ejs', {product: rows[0]});
 });
 
-function createProdGrid(productsList) {
-    let prodSqHTML = '';
-    for(product of productsList) {
-        prodSqHTML += `
-            <div class="product-item">
-                <a class="product-link" href="/product?name=${encodeURIComponent(product.product_name)}">
-                    <img class="product-image" src="${product.product_image}" width="300" height="300" alt="cactus image">
-                    <figcaption class="product-name">
-                        ${product.product_name}
-                    </figcaption>
-                    <figcaption class="product-price">
-                        ${product.product_price}
-                    </figcaption>
-                </a>
-            </div>`;
-    }
-
-    return prodSqHTML;
-}
 
 app.get('/load-prod-sq', async (req, res) => {
     const [productsList] = await pool.query(
@@ -223,20 +88,10 @@ app.get('/about', (req, res) => {
 });
 
 // LOGIN & AUTHENTICATION
-function auth_check(actualRole, requiredRole) {
-    return actualRole === requiredRole;
-};
+// function auth_check(actualRole, requiredRole) {
+//     return actualRole === requiredRole;
+// };
 
-async function getUsers(username, password) {
-    const [rows] = await pool.query(
-        "SELECT id, username, role FROM users WHERE username = ? AND password = ?",
-        [username, password]
-    );
-    if (rows.length !== 1) {
-        return null;
-    }
-    return rows[0];
-};
 
 app.get('/login', (req, res) => {
     res.render('login.ejs');
@@ -366,7 +221,13 @@ async function quantityByName(productName) {
     return rows[0].product_quantity;
 }
 
-async function cart2Order(cart) {
+async function cart2Order(req) {
+    console.log('here');
+    const cart = req.session.cart;
+    console.log(req.session);
+    console.log(req.session.cart);
+    console.log(req.session.userId);
+    
     if (!cart || cart.length === 0) return;
 
     const currentMaxId = await getMaxId();
@@ -375,13 +236,15 @@ async function cart2Order(cart) {
 
     for (const item of cart) {
         const maxQuantity = await quantityByName(item.productName);
+        const prodID = await getProductId(item.productName);
 
         await pool.query(
-            `INSERT INTO orders_list (order_id, product_name, quantity, order_date, paid) 
-             VALUES (?, ?, ?, ?,?)`,
+            `INSERT INTO orders_list (order_id, user_id, product_id,quantity, order_date, paid) 
+             VALUES (?, ?, ?,?, ?,?)`,
             [
-                newOrderId, 
-                item.productName, 
+                newOrderId,
+                req.session.userId, 
+                prodID, 
                 item.quantityOrdered, 
                 orderDate,
                 'no'
@@ -396,19 +259,19 @@ async function cart2Order(cart) {
             ]
         );
     }
+
+    req.session.cart = [];
     return newOrderId;
 }
 
-async function getMaxId() {
-    const [rows] = await pool.query(
-        "SELECT MAX(order_id) as maxVal FROM orders_list"
-    );
-    return rows[0].maxVal || 0;
-}
+// async function getMaxId() {
+//     const [rows] = await pool.query(
+//         "SELECT MAX(order_id) as maxVal FROM orders_list"
+//     );
+//     return rows[0].maxVal || 0;
+// }
 
 app.post('/update-cart', async (req, res) => {
-    console.log(req.session.userId);
-
     let quantityOrdered = parseInt(req.body.productQuantity);
     const productName = req.body.productName;
     const quantityMax = await quantityByName(productName);
@@ -442,39 +305,20 @@ app.post('/update-cart', async (req, res) => {
     }
 });
 
-
-async function getUserOrders(userId) {
-    const [rows] = await pool.query(
-        `SELECT * FROM orders_list WHERE user_id = ? ORDER BY order_date DESC`,
-        [userId]
-    );
-    return groupOrders(rows);
-}
-
-app.get('/load-cart', async (req, res) => {
+app.get('/load-cart', (req, res) => {
     let html = `<tr>
-            <th>orderID</th>    
-            <th>user_id</th>
-            <th>products</th>
+            <th>product name</th>
             <th>quantity</th>
-            <th>date</th>    
-            <th>paid</th>    
         </tr>`;
 
-    // const user_db = await getUserOrders(req.session.userId);
+    for (let i = 0; i < req.session.cart.length; i++) {
+        html += `
+            <tr>
+                <td>${req.session.cart[i].productName}</td>
+                <td>${req.session.cart[i].quantityOrdered}</td>
+            </tr>`;
+    }
 
-    
-    // for(const order of user_db) {
-    //     const orderHTML = `<tr>
-    //         <td>${order.order_id}</td>
-    //         <td>${order.user_id}</td>
-    //         <td>${order.items.map(item => item.product_id).join(', ')}</td> 
-    //         <td>${order.items.map(item => item.product_id + ' (x' + item.quantity + ')').join(', ')}</td>
-    //         <td>${formatDate(order.order_date)}</td>
-    //         <td>${order.paid}</td>
-    //     </tr>`;
-    //     html += orderHTML;
-    // }
     res.send(html);
 });	
 
@@ -530,49 +374,11 @@ app.post('/search', async (req, res) => {
     res.send(prodSqHTML); 
 });
 
-app.post('/search', (req, res) => {
-    const searchQuery = req.body.searchQuery;
-    // const products = // here DB querry with LIKE
-});
-
-// ORDERS
-function groupOrders(rows) {
-    const ordersMap = new Map();
-
-    for (const row of rows) {
-        if (!ordersMap.has(row.order_id)) {
-            ordersMap.set(row.order_id, {
-                order_id: row.order_id,
-                user_id: row.user_id,
-                order_date: row.order_date,
-                paid: row.paid,
-                items: [] 
-            });
-        }
-
-        const order = ordersMap.get(row.order_id);
-        order.items.push({
-            product_id: row.product_id, 
-            quantity: row.quantity
-        });
-    }
-
-    return Array.from(ordersMap.values());
-}
-
-async function getAllOrders() {
-    const [rows] = await pool.query(
-        `SELECT * FROM orders_list`
-    );
-
-    return groupOrders(rows);
-};
-
 app.get('/orders', async(req, res) => {
     if(req.session.role == 'admin') {
         res.render('orders.ejs');
     } else {
-
+        // 
     }
 });
 
@@ -608,7 +414,7 @@ app.get('/orders-list', async (req, res) => {
 });
 
 app.post('/buy', async (req, res) => {
-    await cart2Order(req.session.cart);
+    await cart2Order(req);
 });
 
 // SERVER
