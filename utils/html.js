@@ -1,5 +1,3 @@
-
-
 const nav_notlogged_html = `
     <nav class="main-nav">
         <div class="nav-item">
@@ -62,6 +60,7 @@ const nav_admin_html = `
                 <a class="nav-link" href="/account">Account</a>
                 <div class="nav-drop-content">
                     <a class="nav-drop-link" href="/orders">orders</a>
+                    <a class="nav-drop-link" href="/users-list">users</a>
                     <a class="nav-drop-link" href="/edit">edit</a>
                     <a class="nav-drop-link" href="/cart">cart</a>
                     <a class="nav-drop-link" href="/log-out">log out</a>

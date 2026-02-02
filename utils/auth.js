@@ -1,5 +1,5 @@
-function auth_check(actualRole, requiredRole) {
+function authCheck(actualRole, requiredRole) {
     return actualRole === requiredRole;
 };
 
-module.exports = { auth_check };
+module.exports = { authCheck };

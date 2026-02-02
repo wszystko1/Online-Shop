@@ -1,5 +1,4 @@
 // IMPORTS
-
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -38,12 +37,19 @@ const pool = mysql.createPool({
   database: 'app_db'
 }).promise();
 
-const { auth_check } = require('./utils/auth.js');
+// IMPORT MODULES
+const { authCheck } = require('./utils/auth.js');
 const {
     getUsers,
     getMaxId,
     getUserOrders,
-    getAllOrders
+    getAllOrders,
+    findUserByUsername,
+    addUser,
+    getProductId,
+    quantityByName,
+    cart2Order,
+    getAllUsers
 } = require('./utils/query.js')(pool);
 
 const {
@@ -54,10 +60,15 @@ const {
     createProdListHTML
 } = require('./utils/html.js');
 
-// VIEWS NAVIGATION
+const {
+    groupOrders,
+    formatDate
+} = require('./utils/tmp.js');
+
+// MIDDLEWARE
 app.get('/', (req, res) => {
     res.render('main.ejs');
-});
+});formatDate
 
 app.get('/main', (req, res) => {
     res.redirect('/');
@@ -73,7 +84,6 @@ app.get('/product', async (req, res) => {
     res.render('product.ejs', {product: rows[0]});
 });
 
-
 app.get('/load-prod-sq', async (req, res) => {
     const [productsList] = await pool.query(
         "SELECT * FROM products"
@@ -87,12 +97,6 @@ app.get('/about', (req, res) => {
     res.render('about.ejs');
 });
 
-// LOGIN & AUTHENTICATION
-// function auth_check(actualRole, requiredRole) {
-//     return actualRole === requiredRole;
-// };
-
-
 app.get('/login', (req, res) => {
     res.render('login.ejs');
 });
@@ -103,11 +107,8 @@ app.post('/login', async (req, res) => {
     if (user) {
         req.session.userId = user.id;
         req.session.role = user.role;
-        
-        // TODO: add querry to db to add open
         res.redirect('/main');
     } else {
-        // check if this works
         return res.render('login.ejs', { error: 'Bad login or password' });
     }
 });
@@ -115,27 +116,12 @@ app.post('/login', async (req, res) => {
 app.get('/log-out', (req, res) => {
     req.session.destroy(err => {
         if(err) {
-            // TODO: think of a better sollution
             return res.status(500).json({message: 'Logout failed!'});
         }
         // res.json({message: 'Logged out successfully!'});
     });
     res.redirect('/');
 });
-
-// ACCOUNT CREATION
-async function findUserByUsername(username) {
-    const [rows] = await pool.query(
-        "SELECT id, username, password, role FROM users WHERE username = ?",
-        [username]
-    );
-    return rows.length > 0
-};
-
-async function addUser(username, password){
-    const result = await pool.query('insert into users (username, password, role) values (?,?,?)', [username, password, "user"]);
-   return result;
-};
 
 app.get('/create-account', (req, res) => {
      res.render('create-account.ejs');
@@ -146,7 +132,6 @@ app.post('/create-account', async (req, res) => {
     const userExists = await findUserByUsername(username);
 
     if(userExists){
-        console.log('This username is already in use');
         res.render('create-account.ejs', { error: 'Username already taken' });
     }
     else{
@@ -155,11 +140,10 @@ app.post('/create-account', async (req, res) => {
     }
 });
 
-// DYNAMIC ELEMENTS
 app.get('/load-nav', (req, res) => {
-    if (auth_check(req.session.role, 'admin')) {
+    if (authCheck(req.session.role, 'admin')) {
         res.send(nav_admin_html);
-    } else if(auth_check(req.session.role, 'user')) {
+    } else if(authCheck(req.session.role, 'user')) {
         res.send(nav_logged_html);
     } else {
         res.send(nav_notlogged_html);
@@ -167,7 +151,7 @@ app.get('/load-nav', (req, res) => {
 });
 
 app.get('/load-prod-list', async (req, res) => {
-    if(auth_check(req.session.role, 'admin')) {
+    if(authCheck(req.session.role, 'admin')) {
         try {
             const rows = await pool.query('SELECT * FROM products');
             productList = rows[0];
@@ -181,95 +165,9 @@ app.get('/load-prod-list', async (req, res) => {
     }
 });
 
-function formatDate(date) {
-    return date.toLocaleString('en-US', {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-    });
-};
-
-// CARD
 app.get('/cart', (req, res) => {
     res.render('cart.ejs');
 });
-
-async function quantityByName(productName) {
-    const [rows] = await pool.query(
-        "SELECT product_quantity FROM products WHERE product_name = ?",
-        [productName]
-    );
-    if (rows.length === 0) {
-        return null;
-    }
-    return rows[0].product_quantity;
-}
-
-async function quantityByName(productName) {
-    const [rows] = await pool.query(
-        "SELECT product_quantity FROM products WHERE product_name = ?",
-        [productName]
-    );
-    if (rows.length === 0) {
-        return null;
-    }
-    return rows[0].product_quantity;
-}
-
-async function cart2Order(req) {
-    console.log('here');
-    const cart = req.session.cart;
-    console.log(req.session);
-    console.log(req.session.cart);
-    console.log(req.session.userId);
-    
-    if (!cart || cart.length === 0) return;
-
-    const currentMaxId = await getMaxId();
-    const newOrderId = currentMaxId + 1;
-    const orderDate = new Date().toISOString().slice(0, 10);
-
-    for (const item of cart) {
-        const maxQuantity = await quantityByName(item.productName);
-        const prodID = await getProductId(item.productName);
-
-        await pool.query(
-            `INSERT INTO orders_list (order_id, user_id, product_id,quantity, order_date, paid) 
-             VALUES (?, ?, ?,?, ?,?)`,
-            [
-                newOrderId,
-                req.session.userId, 
-                prodID, 
-                item.quantityOrdered, 
-                orderDate,
-                'no'
-            ]
-        );
-
-        await pool.query(
-            `UPDATE products SET product_quantity = ? WHERE product_name = ?`,
-            [
-                maxQuantity-item.quantityOrdered,
-                item.productName
-            ]
-        );
-    }
-
-    req.session.cart = [];
-    return newOrderId;
-}
-
-// async function getMaxId() {
-//     const [rows] = await pool.query(
-//         "SELECT MAX(order_id) as maxVal FROM orders_list"
-//     );
-//     return rows[0].maxVal || 0;
-// }
 
 app.post('/update-cart', async (req, res) => {
     let quantityOrdered = parseInt(req.body.productQuantity);
@@ -282,12 +180,6 @@ app.post('/update-cart', async (req, res) => {
     if (quantityMax < quantityOrdered) {
         return res.status(400).send("Not enough stock"); 
     } else {
-        // console.log("Updating DB with value:", quantityMax - quantityOrdered);
-        // await pool.query(
-        //     "UPDATE products SET product_quantity = ? WHERE product_name = ?",
-        //     [quantityMax - quantityOrdered, productName]
-        // );
-
         if (!req.session.cart) {
             req.session.cart = [];
         }
@@ -311,6 +203,10 @@ app.get('/load-cart', (req, res) => {
             <th>quantity</th>
         </tr>`;
 
+    if(!req.session.cart) {
+        return res.send(html);
+    }
+
     for (let i = 0; i < req.session.cart.length; i++) {
         html += `
             <tr>
@@ -322,9 +218,8 @@ app.get('/load-cart', (req, res) => {
     res.send(html);
 });	
 
-// EDIT VIEW
 app.get('/edit', (req, res) => {
-    if (auth_check(req.session.role, 'admin')) {
+    if (authCheck(req.session.role, 'admin')) {
         res.render('edit.ejs');
     } else {
         res.status(403).send('Forbidden');
@@ -332,7 +227,7 @@ app.get('/edit', (req, res) => {
 });
 
 app.post('/edit', async (req, res) => {
-    if (auth_check(req.session.role, 'admin')) {
+    if (authCheck(req.session.role, 'admin')) {
         const edit = req.body;
         let sql;
         if(edit.change === 'update') {
@@ -378,12 +273,12 @@ app.get('/orders', async(req, res) => {
     if(req.session.role == 'admin') {
         res.render('orders.ejs');
     } else {
-        // 
+
     }
 });
 
 app.get('/orders-list', async (req, res) => {
-    if (auth_check(req.session.role, 'admin')) {
+    if (authCheck(req.session.role, 'admin')) {
         let ordersListHTML = `<tr>
             <th>orderID</th>    
             <th>user_id</th>
@@ -413,11 +308,68 @@ app.get('/orders-list', async (req, res) => {
     }    
 });
 
-app.post('/buy', async (req, res) => {
-    await cart2Order(req);
+app.get('/users-list', async (req, res) => {
+    if (auth_check(req.session.role, 'admin')) {
+
+        const users = await getAllUsers();
+
+        let usersListHTML = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                table { border-collapse: collapse; width: 100%; max-width: 800px; }
+                th, td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
+                th { background-color: #f2f2f2; }
+                tr:hover { background-color: #f5f5f5; }
+            </style>
+        </head>
+        <body>
+            <h2>User List</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>    
+                        <th>Username</th>
+                        <th>Password (Hash)</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        for (const user of users) {
+            const userHTML = `
+                <tr>
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.password}</td> 
+                    <td>${user.role}</td>
+                </tr>`;
+            
+            usersListHTML += userHTML;
+        }
+
+        usersListHTML += `
+                </tbody>
+            </table>
+        </body>
+        </html>`;
+        
+        res.send(usersListHTML);
+
+    } else {
+        res.status(403).send('Forbidden');
+    }    
 });
 
-// SERVER
+
+app.post('/buy', async (req, res) => {
+    await cart2Order(req);
+    req.session.cart = [];
+    res.redirect('/cart');
+});
+
 app.listen(port, () => {
     console.log(`server is running on port ${port}`);
 });
