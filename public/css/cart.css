@@ -91,6 +91,8 @@ h6 {
 
 .result-body {
     display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .sidebar {
@@ -133,6 +135,18 @@ table {
 
 th, td {
     padding: 10px;
+}
+
+.buy-btn {
+    background-color: #c1d3f0;
+    font-size: 25px;
+    font-weight: 500;
+    border-radius: 15px;
+    border-color: lightgray;
+    padding: 10px;
+    width: 200px;
+    margin-top: 100px;
+    margin-bottom: 800px;
 }
 
 .footer-content {

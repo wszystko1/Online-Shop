@@ -374,6 +374,8 @@ async function cart2Order(cart) {
     const orderDate = new Date().toISOString().slice(0, 10);
 
     for (const item of cart) {
+        const maxQuantity = await quantityByName(item.productName);
+
         await pool.query(
             `INSERT INTO orders_list (order_id, product_name, quantity, order_date, paid) 
              VALUES (?, ?, ?, ?,?)`,
@@ -385,11 +387,19 @@ async function cart2Order(cart) {
                 'no'
             ]
         );
+
+        await pool.query(
+            `UPDATE products SET product_quantity = ? WHERE product_name = ?`,
+            [
+                maxQuantity-item.quantityOrdered,
+                item.productName
+            ]
+        );
     }
     return newOrderId;
 }
 
-async function getMaxId() {//globalny max order_id
+async function getMaxId() {
     const [rows] = await pool.query(
         "SELECT MAX(order_id) as maxVal FROM orders_list"
     );
@@ -441,7 +451,7 @@ async function getUserOrders(userId) {
 }
 
 app.get('/load-cart', async (req, res) => {
-    let ordersListHTML = `<tr>
+    let html = `<tr>
             <th>orderID</th>    
             <th>user_id</th>
             <th>products</th>
@@ -461,10 +471,9 @@ app.get('/load-cart', async (req, res) => {
             <td>${formatDate(order.order_date)}</td>
             <td>${order.paid}</td>
         </tr>`;
-        ordersListHTML += orderHTML;
+        html += orderHTML;
     }
-
-    res.send(ordersListHTML);
+    res.send(html);
 });	
 
 // EDIT VIEW
@@ -596,6 +605,10 @@ app.get('/orders-list', async (req, res) => {
     }    
 });
 
+app.post('/buy', async (res, req) => {
+    cart2Order(req.session.cart);
+});
+
 // SERVER
 app.listen(port, () => {
     console.log(`server is running on port ${port}`);
@@ -605,3 +618,4 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).send('Something went wrong!');
 });
+
